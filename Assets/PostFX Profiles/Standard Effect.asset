@@ -14,7 +14,7 @@ MonoBehaviour:
   debugViews:
     m_Enabled: 1
     m_Settings:
-      mode: 5
+      mode: 0
       depth:
         scale: 1
       motionVectors:
@@ -71,7 +71,7 @@ MonoBehaviour:
   depthOfField:
     m_Enabled: 1
     m_Settings:
-      focusDistance: 5.1478148
+      focusDistance: 5.1478143
       aperture: 0.4
       focalLength: 50
       useCameraFov: 1

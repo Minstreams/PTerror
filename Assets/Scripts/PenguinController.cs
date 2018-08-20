@@ -67,8 +67,10 @@ public class PenguinController : MonoBehaviour
     private const float rotateAcFactor = 0.2f;  //加速度转换常量
     [Header("转身阈值"), SerializeField, Range(0.001f, 1)]
     private float flipThreshold = 0.1f;
-    [Header("动画参数归零比率"), SerializeField]
+    [Header("动画参数归零比率"), SerializeField, Range(0.001f, 1)]
     private float rotateDyingRate = 0.96f;
+    [Header("瞄准平滑比率"), SerializeField, Range(0.001f, 1)]
+    private float raycastPointMoveRate = 0.2f;
 
 
     //Reference Variables
@@ -163,6 +165,8 @@ public class PenguinController : MonoBehaviour
         RaycastHit ammoHit;
         bool hited = Physics.Raycast(gunPoint.position, target - gunPoint.position, out ammoHit, gunShotDistance, ammoLayerMask.value);
 
+        gunShotParticleSystem.Emit(Random.Range(2, 5));
+
         lineRenderer.SetPosition(0, gunPoint.position);
         lineRenderer.SetPosition(1, hited ? ammoHit.point : gunPoint.position + (target - gunPoint.position).normalized * gunShotDistance);
         if (lineCoroutine != null)
@@ -175,7 +179,7 @@ public class PenguinController : MonoBehaviour
         {
             gunShotHitParticle.transform.position = ammoHit.point;
             gunShotHitParticle.transform.rotation = Quaternion.LookRotation(ammoHit.normal);
-            gunShotHitParticle.Emit(3);
+            gunShotHitParticle.Emit(Random.Range(2, 5));
             gunSounds[1].Play();
         }
     }
@@ -203,7 +207,7 @@ public class PenguinController : MonoBehaviour
         //输入
         if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out raycastHit, 100, inputRayLayerMask.value))
         {
-            raycastHitPoint = raycastHit.point;
+            raycastHitPoint += raycastPointMoveRate * (raycastHit.point - raycastHitPoint);
         }
         bool rightMouseDown = Input.GetMouseButton(1);
         if (rightMouseDown != isGunUp)
