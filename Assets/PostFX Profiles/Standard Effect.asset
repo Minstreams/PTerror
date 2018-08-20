@@ -9,12 +9,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8a3bdb2cd68f901469e7cc149151eb49, type: 3}
-  m_Name: Test
+  m_Name: Standard Effect
   m_EditorClassIdentifier: 
   debugViews:
     m_Enabled: 1
     m_Settings:
-      mode: 0
+      mode: 5
       depth:
         scale: 1
       motionVectors:
@@ -71,7 +71,7 @@ MonoBehaviour:
   depthOfField:
     m_Enabled: 1
     m_Settings:
-      focusDistance: 5.147815
+      focusDistance: 5.1478148
       aperture: 0.4
       focalLength: 50
       useCameraFov: 1
@@ -83,18 +83,18 @@ MonoBehaviour:
       sampleCount: 10
       frameBlending: 0
   eyeAdaptation:
-    m_Enabled: 0
+    m_Enabled: 1
     m_Settings:
-      lowPercent: 45
-      highPercent: 95
-      minLuminance: -5
-      maxLuminance: 1
+      lowPercent: 30.711262
+      highPercent: 74.1086
+      minLuminance: -8
+      maxLuminance: 2.4
       keyValue: 0.25
       dynamicKeyValue: 1
       adaptationType: 0
-      speedUp: 2
-      speedDown: 1
-      logMin: -8
+      speedUp: 0.4
+      speedDown: 0.05
+      logMin: -11
       logMax: 4
   bloom:
     m_Enabled: 1

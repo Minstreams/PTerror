@@ -125,6 +125,10 @@ public class PenguinController : MonoBehaviour
         if (raiseGunTime == 0)
         {
             gunIKWeight = b ? 1 : 0;
+            if (!b)
+            {
+                gun.localRotation = Quaternion.Euler(-90, 90, 0);
+            }
         }
         else
         {
@@ -146,6 +150,11 @@ public class PenguinController : MonoBehaviour
         }
 
         gunIKWeight = b ? 1 : 0;
+
+        if (!b)
+        {
+            gun.localRotation = Quaternion.Euler(-90, 90, 0);
+        }
     }
     public void Fire(Vector3 target)
     {
@@ -284,7 +293,7 @@ public class PenguinController : MonoBehaviour
         anim.SetIKPositionWeight(AvatarIKGoal.RightHand, 0.5f * gunIKWeight);
         anim.SetIKRotationWeight(AvatarIKGoal.RightHand, gunIKWeight);
         anim.SetIKPosition(AvatarIKGoal.RightHand, raycastHitPoint);
-        anim.SetIKRotation(AvatarIKGoal.RightHand, Quaternion.LookRotation(raycastHitPoint - transform.position, Vector3.right));
+        anim.SetIKRotation(AvatarIKGoal.RightHand, Quaternion.LookRotation(raycastHitPoint - transform.position));
     }
 
 #if UNITY_EDITOR

@@ -19,6 +19,7 @@ public class SimpleBottonTrigger : MonoBehaviour
     public AudioSource upAudio;
 
     public Renderer[] involvedObjects;
+    public ReflectionProbe[] involvedReflectionProbes;
     public MaterialToControl[] materials;
     public LightToControl[] lights;
 
@@ -93,6 +94,10 @@ public class SimpleBottonTrigger : MonoBehaviour
             foreach (Renderer r in involvedObjects)
             {
                 r.UpdateGIMaterials();
+            }
+            foreach(ReflectionProbe rp in involvedReflectionProbes)
+            {
+                rp.RenderProbe();
             }
             for (int i = 0; i < lights.Length; i++)
             {
