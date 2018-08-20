@@ -10,6 +10,8 @@ public class SimpleBottonTrigger : MonoBehaviour
     private bool isActive = true;
     private Vector3 originPos;
     private Color[] origColor;
+    private int[] probeRenderID;
+
 
     public Transform bottonFace;
     public float pressDownDepth = 0.1f;
@@ -46,6 +48,11 @@ public class SimpleBottonTrigger : MonoBehaviour
         for (int i = 0; i < materials.Length; i++)
         {
             origColor[i] = materials[i].material.GetColor(materials[i].tintName);
+        }
+        probeRenderID = new int[involvedReflectionProbes.Length];
+        for (int i = 0; i < involvedReflectionProbes.Length; i++)
+        {
+            probeRenderID[i] = -1;
         }
     }
 
@@ -95,14 +102,17 @@ public class SimpleBottonTrigger : MonoBehaviour
             {
                 r.UpdateGIMaterials();
             }
-            foreach(ReflectionProbe rp in involvedReflectionProbes)
-            {
-                rp.RenderProbe();
-            }
             for (int i = 0; i < lights.Length; i++)
             {
                 intensity[i] += targetIntensityDifference[i] * Time.deltaTime / pressDownTime;
                 lights[i].light.intensity = intensity[i];
+            }
+            for (int i = 0; i < involvedReflectionProbes.Length; i++)
+            {
+                if (probeRenderID[i] < 0 || involvedReflectionProbes[i].IsFinishedRendering(probeRenderID[i]))
+                {
+                    probeRenderID[i] = involvedReflectionProbes[i].RenderProbe();
+                }
             }
             yield return 0;
         }
@@ -116,6 +126,20 @@ public class SimpleBottonTrigger : MonoBehaviour
         for (int i = 0; i < lights.Length; i++)
         {
             lights[i].light.intensity = lights[i].intensity;
+        }
+        foreach (Renderer r in involvedObjects)
+        {
+            r.UpdateGIMaterials();
+        }
+        yield return checkRpRendered();
+        for (int i = 0; i < involvedReflectionProbes.Length; i++)
+        {
+            probeRenderID[i] = involvedReflectionProbes[i].RenderProbe();
+        }
+        yield return checkRpRendered();
+        for (int i = 0; i < involvedReflectionProbes.Length; i++)
+        {
+            probeRenderID[i] = -1;
         }
 
         //Hold
@@ -134,6 +158,20 @@ public class SimpleBottonTrigger : MonoBehaviour
         bottonFace.localPosition = originPos;
 
         isActive = true;
+    }
+
+    private IEnumerator checkRpRendered()
+    {
+        bool rpRendered;
+        do
+        {
+            rpRendered = true;
+            for (int i = 0; i < involvedReflectionProbes.Length; i++)
+            {
+                rpRendered = rpRendered && (probeRenderID[i] < 0 || involvedReflectionProbes[i].IsFinishedRendering(probeRenderID[i]));
+            }
+            yield return 0;
+        } while (!rpRendered);
     }
 
     private void OnDestroy()
