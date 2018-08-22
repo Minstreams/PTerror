@@ -81,7 +81,6 @@ public class PenguinController : MonoBehaviour
     [Header("瞄准平滑比率"), SerializeField, Range(0.001f, 1)]
     private float raycastPointMoveRate = 0.2f;
 
-
     //Reference Variables
     private Animator anim;
 
@@ -94,6 +93,11 @@ public class PenguinController : MonoBehaviour
         gunSounds[0].clip = ammoMaterial.GunShotAudio;
         gunOriginRotation = gun.localRotation;
     }
+
+    //private void OnCollisionEnter(Collision collision)
+    //{
+    //    print(collision.gameObject);
+    //}
 
     public void TurnLight(bool b)
     {

@@ -15,16 +15,20 @@ public class Enemy : HarmableObject
         agent = GetComponent<NavMeshAgent>();
     }
 
+    private void Start()
+    {
+        Reborn();
+    }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
-            anim.enabled = true;
+            Reborn();
         }
         if (Input.GetKeyDown(KeyCode.T))
         {
-            anim.enabled = false;
+            Die();
         }
         if (Input.GetKeyDown(KeyCode.Y)&&agent!=null)
         {
@@ -38,6 +42,18 @@ public class Enemy : HarmableObject
     }
     public void Die()
     {
+        foreach (Rigidbody rb in GetComponentsInChildren<Rigidbody>())
+        {
+            rb.isKinematic = false;
+        }
         anim.enabled = false;
+    }
+    public void Reborn()
+    {
+        foreach(Rigidbody rb in GetComponentsInChildren<Rigidbody>())
+        {
+            rb.isKinematic = true;
+        }
+        anim.enabled = true;
     }
 }
