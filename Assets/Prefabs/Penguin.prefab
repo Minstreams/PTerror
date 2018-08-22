@@ -219,7 +219,7 @@ GameObject:
   - component: {fileID: 4941556857072122}
   - component: {fileID: 137654935680397872}
   m_Layer: 9
-  m_Name: unamed
+  m_Name: model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -235,6 +235,21 @@ GameObject:
   - component: {fileID: 4603111070039856}
   m_Layer: 9
   m_Name: mixamorig:LeftLeg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1382676988123944
+GameObject:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4805386667956924}
+  m_Layer: 9
+  m_Name: Pivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -341,7 +356,7 @@ GameObject:
   - component: {fileID: 198696534293086108}
   - component: {fileID: 199692648789763760}
   m_Layer: 9
-  m_Name: Particle System
+  m_Name: GunShotParticle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -454,7 +469,7 @@ GameObject:
   - component: {fileID: 4885728677453680}
   - component: {fileID: 120026389876549148}
   m_Layer: 9
-  m_Name: Line
+  m_Name: Gun Line
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -487,6 +502,21 @@ GameObject:
   - component: {fileID: 23357292116201502}
   m_Layer: 9
   m_Name: "\u5706\u9525"
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1690572160218784
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4017130360352558}
+  m_Layer: 9
+  m_Name: Focus Pivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -753,6 +783,20 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!4 &4017130360352558
+Transform:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1690572160218784}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.6, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 4805386667956924}
+  m_Father: {fileID: 4095579351926050}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4029163115771492
 Transform:
   m_ObjectHideFlags: 1
@@ -822,6 +866,7 @@ Transform:
   - {fileID: 4941556857072122}
   - {fileID: 4885728677453680}
   - {fileID: 4605743239187546}
+  - {fileID: 4017130360352558}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1260,6 +1305,19 @@ Transform:
   m_Children:
   - {fileID: 4250740939853916}
   m_Father: {fileID: 4603111070039856}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &4805386667956924
+Transform:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1382676988123944}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4017130360352558}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4820765768294648
@@ -2049,9 +2107,16 @@ MonoBehaviour:
   lighterSounds:
   - {fileID: 82236524089311854}
   - {fileID: 82094522796543410}
+  involvedReflectionProbes:
+  - {fileID: 0}
+  - {fileID: 0}
   gun: {fileID: 4986665698490072}
   gunPoint: {fileID: 4408763592190142}
   raiseGunTime: 0.3
+  forceBackward: 0.4
+  pivotReboundRate: 0.7
+  ammoMaterial: {fileID: 11400000, guid: 83f4a14b113f14b4f9a51688b61ba1e1, type: 2}
+  cinemachine: {fileID: 0}
   gunSounds:
   - {fileID: 82637230707651634}
   - {fileID: 82364935909198568}
@@ -2066,7 +2131,8 @@ MonoBehaviour:
   lineLifeTime: 0.2
   inputRayLayerMask:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 1280
+  focusPivot: {fileID: 4805386667956924}
   speedBonusEmptyHanded: 0.75
   rotateRate: 0.07
   flipThreshold: 0.1
@@ -10518,7 +10584,7 @@ ParticleSystem:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-    maxLights: 20
+    maxLights: 3
   TrailModule:
     enabled: 0
     mode: 0

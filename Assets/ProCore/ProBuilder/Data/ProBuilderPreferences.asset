@@ -34,6 +34,7 @@ MonoBehaviour:
   - pb_SmoothingGroupEditor::m_PreviewOpacity
   - pbEditorScroll.x
   - pbEditorScroll.y
+  - pbBevelAmount
   m_String_keys:
   - pbCurrentMaterialPalette
   - pbVertexColorPrefs1
@@ -41,11 +42,12 @@ MonoBehaviour:
   m_Material_keys:
   - pbDefaultMaterial
   m_Bool_values: 000000000101000000
-  m_Int_values: 0000000002000000000000000000000000000000000000000200000002000000
+  m_Int_values: 0000000001000000000000000000000000000000000000000200000002000000
   m_Float_values:
   - 0.5
   - 0
-  - 155.3999
+  - 0
+  - 0.10305794
   m_String_values:
   - Assets/ProCore/ProBuilder/Data/Default Material Palette.asset
   - RGBA(0.642, 0.642, 0.642, 1.000)

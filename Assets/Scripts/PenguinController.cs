@@ -27,16 +27,24 @@ public class PenguinController : MonoBehaviour
     private float lighterIKWeight = 0.0f;
     private Coroutine lighterTurnCoroutine;
     public AudioSource[] lighterSounds;
+    public List<ReflectionProbe> involvedReflectionProbes;
 
 
     //Gun Parameters
     [Header("【枪参数】")]
     [Header("枪")]
     public Transform gun;
+    private Quaternion gunOriginRotation;
     [Header("枪口")]
     public Transform gunPoint;
     [Header("举枪时间")]
     public float raiseGunTime = 0.3f;
+    [Header("后坐力偏移量")]
+    public float forceBackward = 0.4f;
+    [Header("中心还原率"), Range(0, 1)]
+    public float pivotReboundRate = 0.7f;
+    public MyScriptableObject.AmmoMaterial ammoMaterial;
+    public Cinemachine.PostFX.CinemachinePostFX cinemachine;
     public AudioSource[] gunSounds;
     public ParticleSystem gunShotParticleSystem;
     public ParticleSystem gunShotHitParticle;
@@ -52,12 +60,13 @@ public class PenguinController : MonoBehaviour
     private Coroutine lineCoroutine;
 
 
-
     //Move Parameters
-    [Header("【移动参数】")]
-    public LayerMask inputRayLayerMask;
-    [Header("空手速度加成"), Range(0, 1)]
-    public float speedBonusEmptyHanded = 0.75f;
+    [Header("【移动参数】"), SerializeField]
+    private LayerMask inputRayLayerMask;
+    [Header("【聚焦中心】"), SerializeField]
+    private Transform focusPivot;
+    [Header("空手速度加成"), SerializeField, Range(0, 1)]
+    private float speedBonusEmptyHanded = 0.75f;
     [Header("旋转速率"), SerializeField, Range(0.001f, 1)]
     private float rotateRate = 0.07f;
 
@@ -79,6 +88,11 @@ public class PenguinController : MonoBehaviour
     private void Awake()
     {
         anim = GetComponent<Animator>();
+    }
+    private void Start()
+    {
+        gunSounds[0].clip = ammoMaterial.GunShotAudio;
+        gunOriginRotation = gun.localRotation;
     }
 
     public void TurnLight(bool b)
@@ -102,6 +116,22 @@ public class PenguinController : MonoBehaviour
         {
             realLight.SetActive(false);
             lighterSounds[1].Play();
+
+            int[] probeRenderID = new int[involvedReflectionProbes.Count];
+            for (int i = 0; i < involvedReflectionProbes.Count; i++)
+            {
+                probeRenderID[i] = involvedReflectionProbes[i].RenderProbe();
+            }
+            bool rpRendered;
+            do
+            {
+                rpRendered = true;
+                for (int i = 0; i < involvedReflectionProbes.Count; i++)
+                {
+                    rpRendered = rpRendered && (probeRenderID[i] < 0 || involvedReflectionProbes[i].IsFinishedRendering(probeRenderID[i]));
+                }
+                yield return 0;
+            } while (!rpRendered);
         }
         float temp = lighterIKWeight;
         float gap = (b ? 1 : 0) - temp;
@@ -163,12 +193,18 @@ public class PenguinController : MonoBehaviour
         gunSounds[0].Play();
 
         RaycastHit ammoHit;
-        bool hited = Physics.Raycast(gunPoint.position, target - gunPoint.position, out ammoHit, gunShotDistance, ammoLayerMask.value);
+        Vector3 ammoDir = (target - gunPoint.position).normalized;
+
+        //后坐力
+        gun.Translate(-ammoDir * forceBackward / 6.0f, Space.World);
+        focusPivot.Translate(-ammoDir * forceBackward, Space.World);
+
+        bool hited = Physics.Raycast(gunPoint.position, ammoDir, out ammoHit, gunShotDistance, ammoLayerMask.value);
 
         gunShotParticleSystem.Emit(Random.Range(2, 5));
 
         lineRenderer.SetPosition(0, gunPoint.position);
-        lineRenderer.SetPosition(1, hited ? ammoHit.point : gunPoint.position + (target - gunPoint.position).normalized * gunShotDistance);
+        lineRenderer.SetPosition(1, hited ? ammoHit.point : gunPoint.position + ammoDir * gunShotDistance);
         if (lineCoroutine != null)
         {
             StopCoroutine(lineCoroutine);
@@ -181,8 +217,29 @@ public class PenguinController : MonoBehaviour
             gunShotHitParticle.transform.rotation = Quaternion.LookRotation(ammoHit.normal);
             gunShotHitParticle.Emit(Random.Range(2, 5));
             gunSounds[1].Play();
+
+            Harm(ammoHit, ammoDir);
         }
     }
+
+    /// <summary>
+    /// 伤害判定
+    /// </summary>
+    /// <param name="ammoHit"></param>
+    public void Harm(RaycastHit ammoHit, Vector3 ammoDir)
+    {
+        HarmableObject ho = ammoHit.collider.GetComponentInParent<HarmableObject>();
+        if (ho != null)
+        {
+            ho.Harm(ammoMaterial, ammoHit, ammoDir);
+        }
+
+        if (ammoHit.collider.attachedRigidbody != null)
+        {
+            ammoHit.collider.attachedRigidbody.AddForceAtPosition(ammoDir * ammoMaterial.GetMomentum(), ammoHit.point, ForceMode.Impulse);
+        }
+    }
+
     private IEnumerator lineFade()
     {
         Color c = lineColor;
@@ -201,8 +258,13 @@ public class PenguinController : MonoBehaviour
     {
         //手电筒方向
         if (isLighterUp) lighter.LookAt(raycastHitPoint);
-        //Gun方向
-        if (isGunUp) gun.LookAt(raycastHitPoint);
+
+        float reboundRate = Mathf.Pow(pivotReboundRate, Time.timeScale);
+        //Gun位置方向
+        gun.localPosition *= reboundRate;
+        gun.localRotation = Quaternion.Lerp(gunOriginRotation, Quaternion.Inverse(gun.parent.rotation) * Quaternion.LookRotation(raycastHitPoint - gunPoint.position), gunIKWeight);
+        //中心还原
+        focusPivot.localPosition *= reboundRate;
 
         //输入
         if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out raycastHit, 100, inputRayLayerMask.value))
@@ -221,11 +283,11 @@ public class PenguinController : MonoBehaviour
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-
         if (isGunUp && Input.GetMouseButtonDown(0))
         {
             Fire(raycastHitPoint);
         }
+        cinemachine.m_FocusOffset = gunIKWeight * Vector3.Dot((raycastHitPoint - transform.position), Camera.main.transform.forward);
 
         //计算前进方向
         Vector3 forward = (Camera.main.transform.right * h + Vector3.Cross(Camera.main.transform.right, Vector3.up) * v).normalized;    //目标前进方向归一化向量
@@ -263,7 +325,7 @@ public class PenguinController : MonoBehaviour
                 angle += angle > 0 ? -360 : 360;    //反向
             }
 
-            Debug.DrawLine(transform.position + Vector3.up * 0.6f, transform.position + Vector3.up * 0.6f + targetFaceForward * 3, Color.green);
+            //Debug.DrawLine(transform.position + Vector3.up * 0.6f, transform.position + Vector3.up * 0.6f + targetFaceForward * 3, Color.green);
         }
 
         //播放转身动画
@@ -271,14 +333,14 @@ public class PenguinController : MonoBehaviour
         rotateParameter += rotateAc;
         rotateParameter *= rotateDyingRate;
         anim.SetFloat("turn", rotateParameter > 0 ? Mathf.Clamp01(rotateParameter - 0.3f) : -Mathf.Clamp01(-0.3f - rotateParameter));
-        transform.Rotate(Vector3.up, angle * rotateRate);
+        transform.Rotate(Vector3.up, angle * (1 - Mathf.Pow(1 - rotateRate, Time.timeScale)));
 
         //播放行走动画
         anim.SetFloat("speed", currentSpeed);
 
         //Debug Draw
-        Debug.DrawLine(transform.position + Vector3.up * 0.6f, transform.position + Vector3.up * 0.6f + forward * 5, Color.yellow); //目标前进方向
-        Debug.DrawLine(transform.position + Vector3.up * 0.6f, transform.position + Vector3.up * 0.6f + transform.forward * 2, Color.white, 0.1f);  //实际面朝方向
+        //Debug.DrawLine(transform.position + Vector3.up * 0.6f, transform.position + Vector3.up * 0.6f + forward * 5, Color.yellow); //目标前进方向
+        //Debug.DrawLine(transform.position + Vector3.up * 0.6f, transform.position + Vector3.up * 0.6f + transform.forward * 2, Color.white, 0.1f);  //实际面朝方向
 
     }
     private void OnAnimatorIK(int layerIndex)

@@ -58,7 +58,6 @@ public class SimpleBottonTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        print(other.tag);
         if (isActive && other.CompareTag("Player"))
         {
             StopAllCoroutines();
